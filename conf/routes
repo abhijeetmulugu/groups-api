@@ -4,19 +4,19 @@
 
 
 
-POST        /v1/groups/addGroup              @controllers.GroupsController.createGroup()
-POST        /v1/groups/updateMember          @controllers.GroupsController.addMembers(groupId :String)
-POST        /v1/groups/updateChampion        @controllers.GroupsController.addChampion(groupId :String)
-POST        /v1/groups/removeChampion        @controllers.GroupsController.removeChampion(groupId :String)
-POST        /v1/groups/removeMember          @controllers.GroupsController.removeMember(groupId :String)
+POST        /v1/groups/addGroup                           @controllers.GroupsController.createGroup()
+POST        /v1/groups/updateMember                       @controllers.GroupsController.addMembers(groupId :String)
+POST        /v1/groups/updateChampion                     @controllers.GroupsController.addChampion(groupId :String)
+POST        /v1/groups/removeChampion                     @controllers.GroupsController.removeChampion(groupId :String)
+POST        /v1/groups/removeMember                       @controllers.GroupsController.removeMember(groupId :String)
 
-GET         /v1/groups/member/register      @controllers.GroupsController.insertUserInFireBase
+GET         /v1/groups/member/register                    @controllers.GroupsController.insertUserInFireBase
 
-GET         /v1/groups/index                 @controllers.GroupsController.index
+GET         /v1/groups/index                              @controllers.GroupsController.index
+GET         /v1/groups/authentication/auth_handler        @controllers.GroupsController.authHandler
 
+GET         /v1/groups/unauthorized                       @controllers.GroupsController.unauthorized
 
-GET         /v1/groups/unauthorized         @controllers.GroupsController.unauthorized
-
-GET    /index                      @controllers.GroupsController.createTest()
+GET         /index                                        @controllers.GroupsController.createTest()
 
 

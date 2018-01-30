@@ -53,7 +53,7 @@ class UsersDataBase @Inject()(
 
     def updated_at = column[LocalDateTime]("updated_at", O.Default[LocalDateTime](LocalDateTime.now()))
 
-    def * = (id, name, email, mobile , permissions.?, groupIds.? , created_at, updated_at) <> ((FireBaseUser.apply _).tupled, FireBaseUser.unapply)
+    def * = (id, name, email, mobile , permissions.?, groupIds.? , created_at, updated_at) <> (FireBaseUser.tupled, FireBaseUser.unapply)
   }
   
   
@@ -79,11 +79,18 @@ class UsersDataBase @Inject()(
     db.run(query.result.headOption)
   }
   
-  def insertUser(user : FireBaseUser) = {
-    val insert = DBIO.seq(fireBaseUserRows += user).andThen(DBIO.successful(user))
-    db.run(insert).map(x=>x)
+  def insertUser(user : FireBaseUser):Future[Int] = {
+    try {
+      Logger.debug("user inserted")
+      db.run(fireBaseUserRows.insertOrUpdate(user))
+    }
+    catch{
+      case ex:Exception=>
+        println(s"$ex")
+        Future(0)
+    }
   }
-  
+
 }
 
 

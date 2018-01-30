@@ -15,7 +15,7 @@ libraryDependencies ++=Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.1",
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
   "org.postgresql" % "postgresql" % "42.1.4",
-  "com.insuranceinbox" %% "deadbolt-handler" % "0.2.12"
+  "com.insuranceinbox" %% "deadbolt-handler" % "0.2.13"
 )
 libraryDependencies += "com.github.karelcemus" %% "play-redis" % "1.5.1"
 

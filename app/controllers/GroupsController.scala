@@ -7,7 +7,7 @@ import javax.jws.WebService
 
 import be.objectify.deadbolt.scala.DeadboltActions
 import dao.{PostgreStore, UsersDataBase}
-import models._
+import models.{URL_shortened, _}
 import models.Implicits._
 import models.userFormats._
 import play.api.{Configuration, Logger}
@@ -42,8 +42,8 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
       name = "",
       mobile = "",
       email = "",
-      permissions = None,
-      groupIds = None
+      permissions = Some("dsada"),
+      groupIds =Some("dsda")
     )
     usersDataBase.insertUser(fireBaseUser)
     Ok("argagsd")
@@ -72,10 +72,18 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                 )
                 postGreStore.addChampion(champion)
                 Logger.debug(s"champion-->$champion")
-                Ok(Json.obj("code" -> 0, "msg" -> "Group created Successfully"))
+                ws.url(conf.get[String]("create-group")).post(dto).map(response=>response.json).map{
+                  x=>
+                    if((x \ "code").as[Int]==0)
+                      Ok(Json.obj("code" -> 0, "msg" -> "Group created Successfully"))
+                    else
+                      Ok(Json.obj("code" -> 1, "msg" -> "Error"))
+
+                }
+
               }
-              else Ok(Json.obj("code" -> 1, "msg" -> "Group already exists"))
-          }
+              else Future(Ok(Json.obj("code" -> 1, "msg" -> "Group already exists")))
+          }.flatMap(c=>c)
         }
       )
   }
@@ -106,25 +114,34 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                       name = name,
                       mobile = mobile,
                       email = email,
-                      permissions = None,
-                      groupIds = None
+                      permissions = Some(""),
+                      groupIds = Some("")
                     )
-                    usersDataBase.insertUser(fireBaseUser)
+                    usersDataBase.insertUser(fireBaseUser).map(c=>Logger.debug(s"users->$c"))
                     val url = s"${conf.get[String]("app.auth.register.url")}?id=$id"
                     val payload = Json.obj(
                       "type" -> "jiva-user-register",
                       "application" -> "AUTHSERVER",
                       "payload" -> Json.obj(
                         "mobile" -> mobile,
-                        "url" -> url
+                        "url" -> urlShortener(url)
                       )
                     )
                     Logger.debug(s"member->$member")
                     sendSMS(payload)
-                    postGreStore.addMember(member)
+                    postGreStore.addMember(member).map(x=> Logger.debug(s"rows->$x"))
                 }
-              Ok(Json.obj("code" -> 0, "msg" -> "success"))
-          }
+              val s=Json.obj("members"->(dto \ "members").as[List[JsObject]])
+              ws.url(conf.get[String]("update-members")+groupId).post(s).map(response=>response.json).map{
+                x=>
+                  if((x \ "code").as[Int]==0)
+                    Ok(Json.obj("code" -> 0, "msg" -> "success"))
+                  else
+                    Ok(Json.obj("code" -> 1, "msg" -> "failure"))
+
+              }
+
+          }.flatMap(c=>c)
         }
       )
   }
@@ -244,9 +261,12 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
       request.cookies.foreach(cookie => Logger.debug(s"request id ${request.id} cookie ${cookie.name}=${cookie.value}"))
       request.headers.toMap.foreach { case (key, value) => Logger.debug(s"request id ${request.id} header $key=$value") }
       val r = request.getQueryString("r").getOrElse("")
+      val id = request.getQueryString("id").getOrElse("")
       val token = request.getQueryString("token").get
-      Logger.debug(s"token $token r $r")
+      Logger.debug(s"token $token r $r ")
       val data = Json.obj("token" -> token)
+      val redirectUrl = s"$r&token=$token"
+      Logger.info(s"redirection of url $redirectUrl")
       Logger.info(s"1.request data for getting user details with token $data")
       ws.url(conf.get[String]("app.auth.user_details")).post(data)
         .map(_.body)
@@ -262,13 +282,13 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                 Logger.debug(s"user $user")
                 println(s"user $user")
                 Logger.info(s"host ${request.host}")
-                Redirect(r)
+                Redirect(redirectUrl)
                   .withCookies(createCookie(ii_last_login_date, LocalDateTime.now().toString))
                   .withCookies(createCookie(ii_auth_token, token))
               } else {
                 Logger.warn(s"user does not have base admin role and permission $user")
                 addBasicPermissions(token)
-                Redirect(r)
+                Redirect(redirectUrl)
                   .withCookies(createCookie(ii_last_login_date, LocalDateTime.now().toString))
                   .withCookies(createCookie(ii_auth_token, token))
               }
@@ -277,7 +297,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
               Logger.info("code 3 ")
               println("code 3  ")
               addBasicPermissions(token)
-              Redirect(r)
+              Redirect(redirectUrl)
                 .withCookies(createCookie(ii_last_login_date, LocalDateTime.now().toString))
                 .withCookies(createCookie(ii_auth_token, token))
             }
@@ -332,6 +352,14 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
   
   def sendSMS(request: JsValue) = {
     ws.url(conf.get[String]("nifi.url")).post(request)
+  }
+
+  def urlShortener(url: String): String = {
+    val d = Json.obj("longUrl" -> url)
+    val response = ws.url(conf.get[String]("google_url_shortening")).post(d)
+    val usersList = Await.result(response, Duration.Inf)
+    val urlShortened = usersList.json.validate[URL_shortened].getOrElse(URL_shortened("", ""))
+    urlShortened.id
   }
   
 }

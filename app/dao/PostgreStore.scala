@@ -36,7 +36,7 @@ class PostgreStore @Inject()(
   }
 
   def getChampion(groupId:String,userId:String):Future[Option[UserTable]]={
-    db.run(PostgreDbModels.championTableRows.filter(x=>(x.groupId===groupId && x.userId===userId)).result.headOption)
+    db.run(PostgreDbModels.championTableRows.filter(x=> x.groupId === groupId && x.userId === userId).result.headOption)
   }
 
   def addMember(userTable: UserTable):Future[Int]={

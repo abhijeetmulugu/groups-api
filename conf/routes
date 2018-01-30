@@ -4,14 +4,17 @@
 
 
 
-POST        /v1/groups/addGroup                      @controllers.GroupsController.createGroup()
+POST        /v1/groups/addGroup              @controllers.GroupsController.createGroup()
+POST        /v1/groups/updateMember          @controllers.GroupsController.addMembers(groupId :String)
+POST        /v1/groups/updateChampion        @controllers.GroupsController.addChampion(groupId :String)
+POST        /v1/groups/removeChampion        @controllers.GroupsController.removeChampion(groupId :String)
+POST        /v1/groups/removeMember          @controllers.GroupsController.removeMember(groupId :String)
 
-POST        /v1/groups/updateMember                      @controllers.GroupsController.addMembers(groupId :String)
+GET         /v1/groups/member/register      @controllers.GroupsController.insertUserInFireBase
 
-POST        /v1/groups/updateChampion                      @controllers.GroupsController.addChampion(groupId :String)
+GET         /v1/groups/index                 @controllers.GroupsController.index
 
-POST        /v1/groups/removeChampion                      @controllers.GroupsController.removeChampion(groupId :String)
 
-POST        /v1/groups/removeMember                      @controllers.GroupsController.removeMember(groupId :String)
+GET         /v1/groups/unauthorized         @controllers.GroupsController.unauthorized
 
 

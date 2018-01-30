@@ -15,8 +15,7 @@ import com.typesafe.config.{Config, ConfigFactory}
  */
 class Module extends AbstractModule {
 
-  override def configure() = {
-    bind(classOf[Config]).toInstance(ConfigFactory.load())
+  override def configure(): Unit = {
   }
 
 }

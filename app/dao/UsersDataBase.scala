@@ -22,7 +22,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 @Singleton
 class UsersDataBase @Inject()(
-                               @NamedDatabase("admin_portal")
+                               @NamedDatabase("channel_partners")
                                implicit val dbConfigProvider: DatabaseConfigProvider,
                                implicit val executionContext: ExecutionContext) {
   

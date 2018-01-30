@@ -9,11 +9,13 @@ import be.objectify.deadbolt.scala.DeadboltActions
 import dao.{PostgreStore, UsersDataBase}
 import models._
 import models.Implicits._
+import models.userFormats._
 import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsError, JsObject, JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc._
+import play.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -56,6 +58,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                   userId = (dto \ "createdBy").as[String]
                 )
                 postGreStore.addChampion(champion)
+                Logger.debug(s"champion-->$champion")
                 Ok(Json.obj("code" -> 0, "msg" -> "Group created Successfully"))
               }
               else Ok(Json.obj("code" -> 1, "msg" -> "Group already exists"))
@@ -96,7 +99,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                     usersDataBase.insertUser(fireBaseUser)
                     val url = s"${conf.get[String]("app.auth.register.url")}?id=$id"
                     val payload = Json.obj(
-                      "type" -> "MEDPLUS_THREELAKH_INSURANCE",
+                      "type" -> "jiva-user-register",
                       "application" -> "AUTHSERVER",
                       "payload" -> Json.obj(
                         "mobile" -> mobile,

@@ -81,7 +81,7 @@ class UsersDataBase @Inject()(
   
   def insertUser(user : FireBaseUser) = {
     val insert = DBIO.seq(fireBaseUserRows += user).andThen(DBIO.successful(user))
-    db.run(insert)
+    db.run(insert).map(x=>x)
   }
   
 }

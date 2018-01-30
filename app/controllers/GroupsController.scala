@@ -35,7 +35,20 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
   def index = Action {
     Ok("Group-Wrapper-Api")
   }
-  
+
+  def createTest = Action {
+    val fireBaseUser = FireBaseUser(
+      id = "",
+      name = "",
+      mobile = "",
+      email = "",
+      permissions = None,
+      groupIds = None
+    )
+    usersDataBase.insertUser(fireBaseUser)
+    Ok("argagsd")
+  }
+
   def createGroup: Action[JsValue] = Action.async(parse.json) {
     request =>
       request.body.validate[JsObject].fold(
@@ -55,7 +68,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
               if (x > 0) {
                 val champion = UserTable(
                   groupId = groupId,
-                  userId = (dto \ "createdBy").as[String]
+                  userId = (dto \ "createdBy_userId").as[String]
                 )
                 postGreStore.addChampion(champion)
                 Logger.debug(s"champion-->$champion")
@@ -85,7 +98,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                     val id = UUID.randomUUID().toString
                     val member = UserTable(
                       groupId = groupId,
-                      userId = (x \ "userId").as[String]
+                      userId = id
                     )
                     
                     val fireBaseUser = FireBaseUser(
@@ -106,6 +119,7 @@ class GroupsController @Inject()(implicit val postGreStore: PostgreStore,
                         "url" -> url
                       )
                     )
+                    Logger.debug(s"member->$member")
                     sendSMS(payload)
                     postGreStore.addMember(member)
                 }

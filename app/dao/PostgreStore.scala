@@ -81,7 +81,16 @@ class PostgreStore @Inject()(
   }
 
   def addMember(userTable: UserTable):Future[Int]={
-    db.run(memberTableRows.insertOrUpdate(userTable))
+    try {
+      Logger.debug(s"member updated-->$userTable")
+      db.run(memberTableRows.insertOrUpdate(userTable))
+    }
+    catch{
+      case ex: Exception =>
+        Logger.debug(s"ex->$ex")
+       Future(0)
+    }
+
   }
 
   def deleteMember(userId: String):Future[Int]={
